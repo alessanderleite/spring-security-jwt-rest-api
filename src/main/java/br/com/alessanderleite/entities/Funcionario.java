@@ -28,7 +28,7 @@ import br.com.alessanderleite.enums.PerfilEnum;
 @Table(name = "funcionario")
 public class Funcionario implements Serializable {
 
-	private static final long serialVersionUID = -1373457349679701270L;
+	private static final long serialVersionUID = 540606962819863335L;
 
 	private Long id;
 	private String nome;
@@ -43,11 +43,12 @@ public class Funcionario implements Serializable {
 	private Date dataAtualizacao;
 	private Empresa empresa;
 	private List<Lancamento> lancamentos;
-	
-	public Funcionario() {}
+
+	public Funcionario() {
+	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.AUTO)
 	public Long getId() {
 		return id;
 	}
@@ -87,12 +88,12 @@ public class Funcionario implements Serializable {
 	public BigDecimal getValorHora() {
 		return valorHora;
 	}
-
+	
 	@Transient
 	public Optional<BigDecimal> getValorHoraOpt() {
 		return Optional.ofNullable(valorHora);
 	}
-	
+
 	public void setValorHora(BigDecimal valorHora) {
 		this.valorHora = valorHora;
 	}
@@ -116,6 +117,7 @@ public class Funcionario implements Serializable {
 		return qtdHorasAlmoco;
 	}
 	
+	@Transient
 	public Optional<Float> getQtdHorasAlmocoOpt() {
 		return Optional.ofNullable(qtdHorasAlmoco);
 	}
@@ -156,11 +158,11 @@ public class Funcionario implements Serializable {
 	public String getSenha() {
 		return senha;
 	}
-
+	
 	public void setSenha(String senha) {
 		this.senha = senha;
 	}
-	
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	public Empresa getEmpresa() {
 		return empresa;
@@ -180,22 +182,22 @@ public class Funcionario implements Serializable {
 	}
 	
 	@PreUpdate
-	public void preUpdate() {
-		dataAtualizacao = new Date();
-	}
-	
-	@PrePersist
-	public void prePersist() {
-		final Date atual = new Date();
-		dataCriacao = atual;
-		dataAtualizacao = atual;
-	}
+    public void preUpdate() {
+        dataAtualizacao = new Date();
+    }
+     
+    @PrePersist
+    public void prePersist() {
+        final Date atual = new Date();
+        dataCriacao = atual;
+        dataAtualizacao = atual;
+    }
 
 	@Override
 	public String toString() {
 		return "Funcionario [id=" + id + ", nome=" + nome + ", email=" + email + ", senha=" + senha + ", cpf=" + cpf
 				+ ", valorHora=" + valorHora + ", qtdHorasTrabalhoDia=" + qtdHorasTrabalhoDia + ", qtdHorasAlmoco="
-				+ qtdHorasAlmoco + ", perfil=" + perfil + ", dataCriacao=" + dataCriacao + ", dataAtualizacao="
-				+ dataAtualizacao + ", empresa=" + empresa + "]";
+				+ qtdHorasAlmoco + ", perfil=" + perfil + ", dataCriacao="
+				+ dataCriacao + ", dataAtualizacao=" + dataAtualizacao + ", empresa=" + empresa + "]";
 	}
 }
