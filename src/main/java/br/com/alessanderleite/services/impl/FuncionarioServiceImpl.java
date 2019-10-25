@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import br.com.alessanderleite.entities.Funcionario;
 import br.com.alessanderleite.repositories.FuncionarioRepository;
 import br.com.alessanderleite.services.FuncionarioService;
-import javassist.NotFoundException;
 
 @Service
 public class FuncionarioServiceImpl implements FuncionarioService {
