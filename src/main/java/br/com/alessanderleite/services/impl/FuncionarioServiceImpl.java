@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import br.com.alessanderleite.entities.Funcionario;
 import br.com.alessanderleite.repositories.FuncionarioRepository;
 import br.com.alessanderleite.services.FuncionarioService;
+import javassist.NotFoundException;
 
 @Service
 public class FuncionarioServiceImpl implements FuncionarioService {
@@ -40,7 +41,8 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 	@Override
 	public Optional<Funcionario> buscarPorId(Long id) {
 		log.info("Buscando funcionário pelo ID {}", id);
-		return this.funcionarioRepository.findById(id);
+		Optional<Funcionario> retorno = this.funcionarioRepository.findById(id);
+		return retorno; 
 	}
 
 }
