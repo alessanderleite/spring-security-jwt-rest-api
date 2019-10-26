@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +48,7 @@ public class CadastroPJController {
 	 * @return ResponseEntity<Response<CadastroPJDto>>
 	 * @throws NoSuchAlgorithmException
 	 */
+	@PostMapping
 	public ResponseEntity<Response<CadastroPJDto>> cadastrar(@Valid @RequestBody CadastroPJDto cadastroPJDto,
 			BindingResult result) throws NoSuchAlgorithmException {
 		log.info("Cadastrando PJ: {}", cadastroPJDto.toString());
