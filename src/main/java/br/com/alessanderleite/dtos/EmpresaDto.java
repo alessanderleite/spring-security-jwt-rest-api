@@ -6,7 +6,7 @@ public class EmpresaDto {
 	private String razaoSocial;
 	private String cnpj;
 	
-	private EmpresaDto() {}
+	public EmpresaDto() {}
 
 	public Long getId() {
 		return id;
