@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.alessanderleite.dtos.LancamentoDto;
 import br.com.alessanderleite.entities.Funcionario;
 import br.com.alessanderleite.entities.Lancamento;
+import br.com.alessanderleite.enums.TipoEnum;
 import br.com.alessanderleite.response.Response;
 import br.com.alessanderleite.services.FuncionarioService;
 import br.com.alessanderleite.services.LancamentoService;
@@ -120,6 +122,7 @@ public class LancamentoController {
 		
 	}
 	
+
 	/**
 	 * Valida um funcionário, verificando se ele é existente e válido no
 	 * sistema.
@@ -144,7 +147,7 @@ public class LancamentoController {
 	 * Converte uma entidade lançamento para seu respectivo DTO.
 	 * 
 	 * @param lancamento
-	 * @return
+	 * @return LancamentoDto
 	 */
 	private LancamentoDto converterLancamentoDto(Lancamento lancamento) {
 		LancamentoDto lancamentoDto = new LancamentoDto();
@@ -155,5 +158,40 @@ public class LancamentoController {
 		lancamentoDto.setFuncionarioId(lancamento.getFuncionario().getId());
 		
 		return lancamentoDto;
+	}
+
+	/**
+	 * Converte um LancamentoDto para uma entidade Lancamento.
+	 * 
+	 * @param lancamentoDto
+	 * @param result
+	 * @return Lancamento
+	 * @throws ParseException
+	 */
+	private Lancamento converterDtoParaLancamento(@Valid LancamentoDto lancamentoDto, BindingResult result) throws ParseException {
+		Lancamento lancamento = new Lancamento();
+		
+		if (lancamentoDto.getId().isPresent()) {
+			Optional<Lancamento> lanc = this.lancamentoService.buscarPorId(lancamentoDto.getId().get());
+			if (lanc.isPresent()) {
+				lancamento = lanc.get();
+			} else {
+				result.addError(new ObjectError("funcionario", "Lançamento não encontrado."));
+			}
+		} else {
+			lancamento.setFuncionario(new Funcionario());
+			lancamento.getFuncionario().setId(lancamentoDto.getFuncionarioId());
+		}
+		
+		lancamento.setDescricao(lancamentoDto.getDescricao());
+		lancamento.setLocalizacao(lancamentoDto.getLocalizacao());
+		lancamento.setData(this.dateFormat.parse(lancamentoDto.getData()));
+		
+		if (EnumUtils.isValidEnum(TipoEnum.class, lancamentoDto.getTipo())) {
+			lancamento.setTipo(TipoEnum.valueOf(lancamentoDto.getTipo()));
+		} else {
+			result.addError(new ObjectError("tipo", "Tipo inválido."));
+		}
+		return null;
 	}
 }
