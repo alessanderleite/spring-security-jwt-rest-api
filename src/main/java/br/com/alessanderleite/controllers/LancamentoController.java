@@ -107,7 +107,7 @@ public class LancamentoController {
 	 * 
 	 * @param lancamentoDto
 	 * @param result
-	 * @return
+	 * @return ResponseEntity<Response<LancamentoDto>>
 	 * @throws ParseException
 	 */
 	@PostMapping
@@ -118,11 +118,20 @@ public class LancamentoController {
 		Response<LancamentoDto> response = new Response<LancamentoDto>();
 		validarFuncionario(lancamentoDto, result);
 		Lancamento lancamento = this.converterDtoParaLancamento(lancamentoDto, result);
-		return null;
+		
+		if (result.hasErrors()) {
+			log.error("Erro validando lançamento: {}", result.getAllErrors());
+			result.getAllErrors().forEach(error -> response.getErrors().add(error.getDefaultMessage()));
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		lancamento = this.lancamentoService.persistir(lancamento);
+		response.setData(this.converterLancamentoDto(lancamento));
+		return ResponseEntity.ok(response);
 		
 	}
 	
-
+	
 	/**
 	 * Valida um funcionário, verificando se ele é existente e válido no
 	 * sistema.
@@ -192,6 +201,7 @@ public class LancamentoController {
 		} else {
 			result.addError(new ObjectError("tipo", "Tipo inválido."));
 		}
-		return null;
+		
+		return lancamento;
 	}
 }
