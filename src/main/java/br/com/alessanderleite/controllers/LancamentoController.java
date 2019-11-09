@@ -1,7 +1,10 @@
 package br.com.alessanderleite.controllers;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +14,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.alessanderleite.dtos.LancamentoDto;
+import br.com.alessanderleite.entities.Funcionario;
 import br.com.alessanderleite.entities.Lancamento;
 import br.com.alessanderleite.response.Response;
 import br.com.alessanderleite.services.FuncionarioService;
@@ -77,13 +85,61 @@ public class LancamentoController {
 	 * @return ResponseEntity<Response<LancamentoDto>>
 	 */
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Response<LancamentoDto>> listarPorId(
-			@PathVariable("id") Long id) {
+	public ResponseEntity<Response<LancamentoDto>> listarPorId(@PathVariable("id") Long id) {
+		log.info("Buscando lançamento por ID: {}", id);
+		Response<LancamentoDto> response = new Response<LancamentoDto>();
+		Optional<Lancamento> lancamento = this.lancamentoService.buscarPorId(id);
 		
+		if (!lancamento.isPresent()) {
+			log.info("Lancamento não encontrado para o ID: {}", id);
+			response.getErrors().add("Lancamento não encontrado para o id " + id);
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		response.setData(this.converterLancamentoDto(lancamento.get()));
+		return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * Adiciona um novo lançamento
+	 * 
+	 * @param lancamentoDto
+	 * @param result
+	 * @return
+	 * @throws ParseException
+	 */
+	@PostMapping
+	public ResponseEntity<Response<LancamentoDto>> adicionar(
+			@Valid @RequestBody LancamentoDto lancamentoDto,
+			BindingResult result) throws ParseException {
+		log.info("Adicionando lançamento: {}", lancamentoDto.toString());
+		Response<LancamentoDto> response = new Response<LancamentoDto>();
+		validarFuncionario(lancamentoDto, result);
+		Lancamento lancamento = this.converterDtoParaLancamento(lancamentoDto, result);
 		return null;
 		
 	}
 	
+	/**
+	 * Valida um funcionário, verificando se ele é existente e válido no
+	 * sistema.
+	 * 
+	 * @param lancamentoDto
+	 * @param result
+	 */
+	private void validarFuncionario(@Valid LancamentoDto lancamentoDto, BindingResult result) {
+		if (lancamentoDto.getFuncionarioId() == null) {
+			result.addError(new ObjectError("funcionario", "Funcionário não informado"));
+			return;
+		}
+		
+		log.info("Validando funcionário id {}: ", lancamentoDto.getFuncionarioId());
+		Optional<Funcionario> funcionario = this.funcionarioService.buscarPorId(lancamentoDto.getFuncionarioId());
+		if (!funcionario.isPresent()) {
+			result.addError(new ObjectError("funcionario", "Funcionário não encontrado. Id inexistente."));
+		}
+	}
+
 	/**
 	 * Converte uma entidade lançamento para seu respectivo DTO.
 	 * 
