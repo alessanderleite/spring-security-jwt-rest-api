@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -131,6 +132,33 @@ public class LancamentoController {
 		
 	}
 	
+	/**
+	 * Atualiza os dados de um lançamento.
+	 * 
+	 * @param id
+	 * @param lancamentoDto
+	 * @param result
+	 * @return ResponseEntity<Response<LancamentoDto>>
+	 * @throws ParseException
+	 */
+	@PutMapping(value = "/{id}")
+	public ResponseEntity<Response<LancamentoDto>> atualizar(@PathVariable("id") Long id,
+			@Valid @RequestBody LancamentoDto lancamentoDto, BindingResult result) throws ParseException {
+		log.info("Atualizando lançamento: {}", lancamentoDto.toString());
+		Response<LancamentoDto> response = new Response<LancamentoDto>();
+		validarFuncionario(lancamentoDto, result);
+		lancamentoDto.setId(Optional.of(id));
+		Lancamento lancamento = this.converterDtoParaLancamento(lancamentoDto, result);
+		
+		if (result.hasErrors()) {
+			log.error("Erro validando lançamento: {}", result.getAllErrors());
+			result.getAllErrors().forEach(error -> response.getErrors().add(error.getDefaultMessage()));
+		}
+		
+		lancamento = this.lancamentoService.persistir(lancamento);
+		response.setData(this.converterLancamentoDto(lancamento));
+		return ResponseEntity.ok(response);
+	}
 	
 	/**
 	 * Valida um funcionário, verificando se ele é existente e válido no
