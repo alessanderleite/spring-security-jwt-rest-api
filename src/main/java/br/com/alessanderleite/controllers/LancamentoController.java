@@ -15,9 +15,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -158,6 +160,29 @@ public class LancamentoController {
 		lancamento = this.lancamentoService.persistir(lancamento);
 		response.setData(this.converterLancamentoDto(lancamento));
 		return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * Remove um lançamento por ID
+	 * 
+	 * @param id
+	 * @return ResponseEntity<Response<Lancamento>>
+	 */
+	@DeleteMapping(value = "/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN')")
+	public ResponseEntity<Response<String>> remove(@PathVariable("id") Long id) {
+		log.info("Removendo lançamento: {}", id);
+		Response<String> response = new Response<String>();
+		Optional<Lancamento> lancamento = this.lancamentoService.buscarPorId(id);
+		
+		if (!lancamento.isPresent()) {
+			log.info("Erro ao remover devido ao lançamento ID: {} ser inválido.", id);
+			response.getErrors().add("Erro ao remover lançamento. Registro não encontrado para o id " + id);
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		this.lancamentoService.remover(id);
+		return ResponseEntity.ok(new Response<String>());
 	}
 	
 	/**
